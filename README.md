@@ -8,6 +8,11 @@ that are interested in adding their tools into the OSINT LIAR ecosystem.
 The discovery plugins has example plugins that can be imported into your OSINT LIAR
 installation. You can then configure the plugins to your needs
 
+You will need to set up an Api Key that points to the IP and port of this software
+running.
+
+
+
 ## Docker Setup
 
 ```shell
