@@ -9,9 +9,10 @@ The discovery plugins has example plugins that can be imported into your OSINT L
 installation. You can then configure the plugins to your needs
 
 You will need to set up an Api Key that points to the IP and port of this software
-running.
+running. Specifically, the `DevUrl` needs to be set to something like http://localhost:8000/
 
 
+![alt text](assets/api_screenshot.png "Image of Api Key settings")
 
 ## Docker Setup
 
