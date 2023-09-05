@@ -2,9 +2,10 @@ import uuid
 
 import aiofiles
 import uvicorn as uvicorn
-from fastapi import FastAPI, Request, status, Body, File, UploadFile
+from fastapi import FastAPI, Request, status, Body, File, UploadFile, Depends
+from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from starlette.middleware.cors import CORSMiddleware
-from typing import List
+from typing import List, Annotated
 import logging
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -85,6 +86,16 @@ async def assign_tags(text: str = Body(..., embed=True, alias='Text')) -> Enrich
     return EnrichmentSchema(tags=['Tag1', 'tag 2', 'tag ABC'], message=message)
 
 
+@app.post('/assign-attributes')
+async def assign_attributes(text: str = Body(..., embed=True, alias='Text')) -> EnrichmentSchema:
+    message: MessageSchema = (
+        MessageSchema(
+            title='pebble Attribute Assignment',
+            message=f'Attributes assigned',
+            type='success'))
+    return EnrichmentSchema(attributes=dict(project='pebble', product='osint_liar'), message=message)
+
+
 @app.post('/upload')
 async def upload_file(
     content_data: UploadFile = File(..., description="The raw data content.", alias='ContentData')
@@ -94,12 +105,18 @@ async def upload_file(
         content = await content_data.read()  # async write chunk
         await out_file.write(content)
         out_file.close()
+    message: MessageSchema = (
+        MessageSchema(
+            title='Pebble File Upload',
+            message=f'File Uploaded',
+            type='success'))
+    return EnrichmentSchema(message=message)
 
 
 @app.post("/html", response_class=HTMLResponse)
 async def echo_html(html: str = Body(..., embed=True, alias='ContentHtml')) -> HTMLResponse:
     """
-    Echo out the received html back..
+    Echo out the received html back.Demonstrates that you can build a custom html page response
     :param html:
     :return:
     """
