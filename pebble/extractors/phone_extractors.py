@@ -4,6 +4,16 @@ from typing import List
 import phonenumbers
 
 
+def phone_wrap(text: str, region: str = None) -> List[str]:
+    """
+    Calls all the phone numbers extractor functions
+    :param region:
+    :param text:
+    :return:
+    """
+    return phone_number_extractor(text, region) + phone_number_regex_extractor(text)
+
+
 def phone_number_regex_extractor(text: str) -> List[str]:
     phone_numbers: List[str] = re.findall(r'^(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$', text)
     return phone_numbers

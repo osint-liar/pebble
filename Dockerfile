@@ -4,6 +4,7 @@ WORKDIR /code
 
 COPY poetry.lock ./poetry.lock
 COPY pyproject.toml ./pyproject.toml
+RUN apt-get install tesseract-ocr
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install poetry
 RUN poetry install

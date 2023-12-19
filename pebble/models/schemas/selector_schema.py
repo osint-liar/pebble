@@ -1,7 +1,11 @@
-from pebble.models.schemas.pascal_case_model import PascalCaseModel
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-class SelectorSchema(PascalCaseModel):
-    selector_name: str
+class SelectorSchema(BaseModel):
+    selector_name: Optional[str] = None
     selector_type_name: str
+    active: bool = False
+    description: Optional[str] = None
 
