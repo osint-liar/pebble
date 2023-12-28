@@ -30,4 +30,4 @@ def test_email(client: TestClient):
                                files={'ContentData': (file_name, f)})
         assert response.status_code == 200
         json = response.json()
-        assert len(json['Record']['ContentSelectorsJson']) == 59
+        assert len(json['Record']['ContentSelectorsJson']) == 0

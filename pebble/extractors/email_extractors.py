@@ -17,7 +17,7 @@ def email_wrap(input_api_core_data: ApiCoreDataSchemaV1, output_api_core_data: A
         raise HTTPException(status_code=400, detail=f'Email extract cannot process image files')
 
     text: str = input_api_core_data.content_data.decode('utf-8')
-    emails: List[str] = list(set(email_by_regex(text)))
+    emails: List[str] = filter(lambda e: not e.endswith('@mhtml.blink'), list(set(email_by_regex(text))))
     output_api_core_data.content_data = 'Pebble Service extracted the email addresses ' + ' ,'.join(emails)
     output_api_core_data.content_url = 'http://pebble?Cmd=email_extractors'
     builder: SelectorSchema = SelectorSchema(selector_type_name='email')
