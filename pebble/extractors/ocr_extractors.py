@@ -1,10 +1,10 @@
 import logging
 import pytesseract
+from fastapi import HTTPException
 
 from pebble.models.schemas.api_core_data_schema import ApiCoreDataSchemaV1
 
 logger = logging.getLogger(__name__)
-
 
 
 def pytesseract_ocr_command(input_api_core_data: ApiCoreDataSchemaV1, output_api_core_data: ApiCoreDataSchemaV1) \
@@ -16,6 +16,10 @@ def pytesseract_ocr_command(input_api_core_data: ApiCoreDataSchemaV1, output_api
     :param output_api_core_data:
     :return:
     """
+
+    if input_api_core_data.content_mime_type.lower() not in ["image/jpeg", "image/png"]:
+        raise HTTPException(status_code=400, detail=f'OCR cannot process non-image files')
+
     file_path: str = input_api_core_data.content_file_path
     try:
         logger.debug(f'pytesseract ocr_command: {file_path}')

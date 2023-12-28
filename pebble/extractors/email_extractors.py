@@ -1,9 +1,9 @@
 import logging
 import re
+from http.client import HTTPException
 from typing import List
 
-from pebble.models.schemas.api_core_data_schema import ApiCoreDataSchemaV1
-from pebble.models.schemas.selector_schema import SelectorSchema
+from pebble.models.schemas.api_core_data_schema import ApiCoreDataSchemaV1, SelectorSchema
 
 logger = logging.getLogger(__name__)
 
@@ -13,16 +13,21 @@ def email_wrap(input_api_core_data: ApiCoreDataSchemaV1, output_api_core_data: A
     Wraps all the email extractors
     :return:
     """
+    if input_api_core_data.content_mime_type.lower() in ["image/jpeg", "image/png"]:
+        raise HTTPException(status_code=400, detail=f'Email extract cannot process image files')
 
-    emails: List[str] = email_by_regex(input_api_core_data.content_data)
-    builder: SelectorSchema = SelectorSchema(active=True, Description="Generated in Pebble Api ", selector_type_name='email')
-    selectors: List[SelectorSchema]
+    text: str = input_api_core_data.content_data.decode('utf-8')
+    emails: List[str] = list(set(email_by_regex(text)))
+    output_api_core_data.content_data = 'Pebble Service extracted the email addresses ' + ' ,'.join(emails)
+    output_api_core_data.content_url = 'http://pebble?Cmd=email_extractors'
+    builder: SelectorSchema = SelectorSchema(selector_type_name='email')
+    selectors: List[SelectorSchema] = []
 
     for email in emails:
         selector = builder.model_copy()
         selector.selector_name = email
         selectors.append(selector)
-    output_api_core_data.content_selectors_json
+    output_api_core_data.content_selectors_json = selectors
 
 
 def email_by_regex(text: str) -> List[str]:

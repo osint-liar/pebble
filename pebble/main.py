@@ -1,6 +1,5 @@
 import os
 import tempfile
-import uuid
 
 import aiofiles
 import uvicorn as uvicorn
@@ -14,12 +13,10 @@ from fastapi.responses import JSONResponse
 from starlette.responses import HTMLResponse
 from pebble.extractors.api_core_data_extractors import api_core_data_clone, api_core_data_convert_to_response
 from pebble.extractors.ocr_extractors import pytesseract_ocr_command
+from pebble.extractors.phone_extractors import phone_wrap
 from pebble.models.schemas.api_core_data_schema import ApiCoreDataSchemaV1
 from pebble.models.schemas.pebble_schema import PebbleResponseSchema
-from pebble.extractors.phone_extractors import phone_number_regex_extractor
-from pebble.models.schemas.selector_schema import SelectorSchema
-from pebble.extractors.email_extractors import email_by_regex, email_wrap
-from pebble.models.schemas.enrichment_schema import EnrichmentSchema, MessageSchema
+from pebble.extractors.email_extractors import email_wrap
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -49,51 +46,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logging.error(f"{request}: {exc_str}")
     content = {'status_code': 10422, 'message': exc_str, 'data': None}
     return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-
-
-@app.post('/extract-email-addresses')
-async def extract_emails(text: str = Body(..., embed=True, alias='Text'), description="The raw data content.") -> EnrichmentSchema:
-    selectors: List[SelectorSchema] = \
-        [SelectorSchema(selector_name=email, selector_type_name='email') for email in email_by_regex(text)]
-    message: MessageSchema = (
-        MessageSchema(
-            title='pebble Email Extract',
-            message=f'There were {len(selectors)} found in the given text',
-            type='success'))
-    return EnrichmentSchema(selectors=selectors, message=message)
-
-
-@app.post('/extract-phone-numbers')
-async def extract_emails(text: str = Body(..., embed=True, alias='Text'), description="The raw data content.") -> EnrichmentSchema:
-    selectors: List[SelectorSchema] = \
-        [SelectorSchema(selector_name=phone_number, selector_type_name='phone') for phone_number in phone_number_regex_extractor(text)]
-    message: MessageSchema = (
-        MessageSchema(
-            title='pebble Email Extract',
-            message=f'There were {len(selectors)} found in the given text',
-            type='success'))
-    return EnrichmentSchema(selectors=selectors, message=message)
-
-
-@app.post('/assign-tags')
-async def assign_tags(text: str = Body(..., embed=True, alias='Text')) -> EnrichmentSchema:
-    message: MessageSchema = (
-        MessageSchema(
-            title='pebble Tag Assignment',
-            message=f'3 tags were assigned',
-            type='success'))
-    return EnrichmentSchema(tags=['Tag1', 'tag 2', 'tag ABC'], message=message)
-
-
-@app.post('/assign-attributes')
-async def assign_attributes(text: str = Body(..., embed=True, alias='Text')) -> EnrichmentSchema:
-    message: MessageSchema = (
-        MessageSchema(
-            title='pebble Attribute Assignment',
-            message=f'Attributes assigned',
-            type='success'))
-    return EnrichmentSchema(attributes=dict(project='pebble', product='osint_liar'), message=message)
 
 
 @app.post('/v1/upload')
@@ -144,11 +96,12 @@ def _commands(command_name: str) -> Any:
     """
     commands: Dict[str, Any] = {
         'pytesseract_ocr_command': pytesseract_ocr_command,
-        'email_extractor': email_wrap
+        'email_extract': email_wrap,
+        'phone_extract': phone_wrap
     }
     if commands.get(command_name) is None:
         logger.error(f'Command {command_name} does not exist.')
-        raise ValueError(f"No Command found for {command_name}")
+        raise HTTPException(status_code=400, detail=f'No Command found for {command_name}')
     return commands.get(command_name)
 
 if __name__ == "__main__":

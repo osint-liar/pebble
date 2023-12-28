@@ -52,6 +52,7 @@ uvicorn = ">=0.15.0"
 stringcase = ">=1.2.0"
 phonenumbers = ">=8.13.19"
 pytesseract = "^0.3.10"
+pylint = "^3.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "7.1.1"

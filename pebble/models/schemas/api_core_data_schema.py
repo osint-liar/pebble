@@ -1,10 +1,16 @@
-from typing import Optional, Union, Any
+from typing import Optional, Any, List
 import stringcase
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 def to_pascal(name: str) -> str:
     return stringcase.pascalcase(name)
+
+
+class SelectorSchema(BaseModel):
+    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
+    selector_name: Optional[str] = None
+    selector_type_name: str
 
 
 class ApiCoreDataSchema(BaseModel):
@@ -22,21 +28,17 @@ class ApiCoreDataSchema(BaseModel):
     content_note: Optional[str] = None
     content_sourced_from: str = 'Pebble Api'
     content_title: Optional[str] = None
-    content_selectors_json: Optional[str] = None
+    content_selectors_json: Optional[List[SelectorSchema]] = None
     case_management_uuid: Optional[str] = None
     case_management_name: Optional[str] = None
 
 
 class ApiCoreDataSchemaV1(ApiCoreDataSchema):
     """ Transform from the incoming core data"""
-
-    class Config:
-        alias_generator = to_pascal
-        populate_by_name = True
+    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
 
 
 class ApiCoreDataSchemaV1Response(ApiCoreDataSchema):
     """ Transform from intermediate format to pascal case for outputting it"""
-    class Config:
-        alias_generator = to_pascal
-        populate_by_name = True
+    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
+
