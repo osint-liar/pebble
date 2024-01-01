@@ -1,17 +1,17 @@
 import os
 import tempfile
-
 import aiofiles
 import uvicorn as uvicorn
-from fastapi import FastAPI, Request, status, Body, File, UploadFile
+from fastapi import FastAPI, Request, status, Body
 from starlette.datastructures import FormData
 from starlette.middleware.cors import CORSMiddleware
-from typing import List, Dict, Any
+from typing import Dict, Any
 import logging
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.responses import HTMLResponse
 from pebble.extractors.api_core_data_extractors import api_core_data_clone, api_core_data_convert_to_response
+from pebble.extractors.audio_to_text_extractors import whisper_extract_text_command
 from pebble.extractors.ocr_extractors import pytesseract_ocr_command
 from pebble.extractors.phone_extractors import phone_wrap
 from pebble.models.schemas.api_core_data_schema import ApiCoreDataSchemaV1
@@ -24,7 +24,7 @@ logger.setLevel(logging.DEBUG)
 tags_metadata = [
     {
         "name": "pebble",
-        "description": "Pebble is a web service that provides access to data engineering pipeline for OSINT LIAR.",
+        "description": "Pebble is a web service that provides access to a data engineering pipeline for OSINT LIAR.",
     }
 ]
 
@@ -97,7 +97,8 @@ def _commands(command_name: str) -> Any:
     commands: Dict[str, Any] = {
         'pytesseract_ocr_command': pytesseract_ocr_command,
         'email_extract': email_wrap,
-        'phone_extract': phone_wrap
+        'phone_extract': phone_wrap,
+        'whisper': whisper_extract_text_command
     }
     if commands.get(command_name) is None:
         logger.error(f'Command {command_name} does not exist.')
